@@ -5,9 +5,10 @@ let TodoList = function(props){
     let todoList = [];
     props.todos.forEach(function(ele, i){
         todoList.push(<TodoItem 
-            todo = {ele} 
-            index = {i} 
+            todoItem = {ele}
+            key = {ele.id}
             onDeleteBtnClick = {props.onDeleteBtnClick}
+            onCheckBoxClick = {props.onCheckBoxClick}
         />);
     });
 
