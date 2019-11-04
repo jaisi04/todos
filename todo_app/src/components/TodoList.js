@@ -1,15 +1,15 @@
 import React from 'react';
 import TodoItem from './TodoItem';
 
-let TodoList = function(props){
-    let todoList = [];
-    props.todos.forEach(function(ele, i){
-        todoList.push(<TodoItem 
-            todoItem = {ele}
-            key = {ele.id}
-            onDeleteBtnClick = {props.onDeleteBtnClick}
-            onCheckBoxClick = {props.onCheckBoxClick}
-        />);
+const TodoList = ({todos, ...actionProps}) => {
+    const todoList = todos.map((todo) => {
+        return(
+            <TodoItem 
+                todoItem = {todo}
+                key = {todo.id}
+                {...actionProps}
+            />
+        );
     });
 
     return (

@@ -2,132 +2,126 @@ import React from 'react';
 import TodoForm from './TodoForm';
 import TodoList from './TodoList';
 import TodosCount from './TodosCount';
-import Constants from '../constants'
+import {ALL, ACTIVE, COMPLETED} from '../constants'
 import FilterLinks from './FilterLinks';
 
-const ALL = Constants.ALL;
-const ACTIVE = Constants.ACTIVE;
-const COMPLETED = Constants.COMPLETED;
-
 class Todo extends React.Component{
+    state = {
+        todos : [],
+        currentFilter : ALL,
+        searchQuery : ''
+    };
 
-    constructor(props){
-        super(props);
-        this.state = {
-            todos : [],
-            currentFilter : ALL,
-            searchQuery : ''
-        };
-        this.handleNewTodoItem = this.handleNewTodoItem.bind(this);
-        this.handleDeleteBtnClick = this.handleDeleteBtnClick.bind(this);
-        this.handleCheckBoxClick = this.handleCheckBoxClick.bind(this);
-        this.handleFilterChange = this.handleFilterChange.bind(this);
-        this.handleTodoSearch = this.handleTodoSearch.bind(this);
-    }
-
-    handleNewTodoItem(){
-        this.setState(function(state){
-            let todoItem = {
-                todo : state.searchQuery,
+    handleNewTodoItem = () => {
+        this.setState(({searchQuery, todos}) => {
+            const todoItem = {
+                todo : searchQuery,
                 id : Date.now().toString(),
                 completed : false
             }
-            let todos = state.todos.concat(todoItem);
+            todos = [...todos, todoItem];
             return {
-                todos : todos,
+                todos,
                 searchQuery : ''
             }
         })
     }
 
-    handleDeleteBtnClick(event){
-        let id = event.target.value;
-        this.setState(function(state){
-            let todos = state.todos;
-            let index = null;
-            let todosLen = todos.length;
-            for(let i =0; i< todosLen; i++){
-                if(todos[i].id === id){
-                    index = i;
-                }
-            }
-            todos = todos.slice(0, index).concat(todos.slice(index+1));
+    handleDeleteBtnClick = (event) => {
+        const id = event.target.value;
+        this.setState(({todos}) => {
+            todos = todos.filter(({id:todoId}) => {
+                return (todoId !== id);
+            });
             return {
-                todos: todos
+                todos
             }
         });
     }
 
-    handleCheckBoxClick(event){
-        let id = event.target.value;
-        this.setState(function(state){
-            let todos = state.todos;
-            let index = null;
-            let todosLen = todos.length;
-            for(let i =0; i< todosLen; i++){
-                if(todos[i].id === id){
-                    index = i;
-                }
-            }
-            todos = (todos.slice(0, index).concat([{todo : todos[index].todo, id : todos[index].id, completed : !todos[index].completed }]).concat(todos.slice(index+1)));
+    handleCheckBoxClick = (event) => {
+        const id = event.target.value;
+        this.setState(({todos}) => {
+            const index = todos.findIndex(({id:todoId}) => {
+                return todoId === id;
+            });
+            const {todo, completed} = todos[index];
+            todos = [
+                    ...todos.slice(0, index),
+                    {
+                        todo, 
+                        id, 
+                        completed : !completed 
+                    },
+                    ...todos.slice(index+1)
+            ];
             return {
-                todos: todos
+                todos
             }
         });
     }
 
-    handleFilterChange(event, currentFilter){
+    handleFilterChange = (event, currentFilter) => {
         event.preventDefault();
-        this.setState(function(){
+        this.setState(() => {
             return{
-                currentFilter: currentFilter
+                currentFilter
             }
         })
     }
 
-    handleTodoSearch(searchQuery){
-        this.setState(function(){
+    handleTodoSearch = (searchQuery) => {
+        this.setState(() => {
             return {
-                searchQuery : searchQuery
+                searchQuery
             }
         });
     }
 
     filterTodos(){
-        let todos = this.state.todos;
-        let todosLen = todos.length;
-        let currentFilter = this.state.currentFilter;
-        let filteredTodos = [];
-        let searchQuery = this.state.searchQuery;
+        const {
+            todos,
+            currentFilter,
+            searchQuery
+         } = this.state;
 
-        for(let i = 0; i < todosLen; i++){
-            if(searchQuery && todos[i].todo.indexOf(searchQuery) === -1){
-                continue;
+        const filteredTodos = todos.filter(({todo, completed}) => {
+            if((searchQuery && todo.indexOf(searchQuery) === -1) ||
+                (currentFilter === ACTIVE && completed) ||
+                (currentFilter === COMPLETED && !completed)){
+                    return false;
             }
-            if(currentFilter === ACTIVE && todos[i].completed){
-                continue;
-            }
-            if(currentFilter === COMPLETED && !todos[i].completed){
-                continue;
-            }
-            filteredTodos.push(todos[i]);
-        }
+            return true;
+        });
 
         return filteredTodos;
     }
 
     render(){
-        let todos = this.filterTodos();
+        const {
+            handleTodoSearch,
+            handleNewTodoItem,
+            handleFilterChange,
+            handleDeleteBtnClick,
+            handleCheckBoxClick,
+            state : {searchQuery, currentFilter}
+        } = this;
+        const todos = this.filterTodos();
+        
         return (
             <div>
-                <TodoForm todoText = {this.state.searchQuery} onTodoSearch = {this.handleTodoSearch} onNewTodoItem = {this.handleNewTodoItem} />
-                <FilterLinks currentFilter = {this.state.currentFilter} onFilterChange = {this.handleFilterChange}/>
+                <TodoForm 
+                    todoText = {searchQuery} 
+                    onTodoSearch = {handleTodoSearch} 
+                    onNewTodoItem = {handleNewTodoItem} 
+                />
+                <FilterLinks currentFilter = {currentFilter} onFilterChange = {handleFilterChange}/>
                 <TodoList 
                     todos = {todos} 
-                    onDeleteBtnClick = {this.handleDeleteBtnClick} 
-                    onCheckBoxClick = {this.handleCheckBoxClick}
+                    onDeleteBtnClick = {handleDeleteBtnClick} 
+                    onCheckBoxClick = {handleCheckBoxClick}
                 />
-                <TodosCount todosCount = {todos.length} />
+                <TodosCount todosCount = {todos.length} currentFilter = {currentFilter} />
             </div>
         );
     }

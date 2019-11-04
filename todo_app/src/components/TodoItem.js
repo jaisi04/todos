@@ -1,22 +1,21 @@
 import React from 'react';
 
-let TodoItem = function(props){
-    let todoItem = props.todoItem;
+const TodoItem = ({todoItem :{todo, id, completed} = {}, onCheckBoxClick, onDeleteBtnClick}) => {
     return(
         <li className = "list-group-item">
             <h4>
                 <input 
                     type = "checkbox" 
                     className = "float-left" 
-                    checked = {todoItem.completed}
-                    onChange = {props.onCheckBoxClick}
-                    value = {todoItem.id}
+                    checked = {completed}
+                    onChange = {onCheckBoxClick}
+                    value = {id}
                 />
-                {todoItem.todo}
+                {todo}
                 <button 
                     className="btn btn-danger float-right"
-                    onClick = {props.onDeleteBtnClick}
-                    value = {todoItem.id}
+                    onClick = {onDeleteBtnClick}
+                    value = {id}
                 >
                 Delete
                 </button>

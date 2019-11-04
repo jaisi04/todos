@@ -1,7 +1,3 @@
-const constants = {
-    ALL : 'all',
-    ACTIVE : 'active',
-    COMPLETED : 'completed'
-}
-
-export default constants;
+export const ALL = 'All';
+export const ACTIVE = 'Active';
+export const COMPLETED = 'Completed';
